@@ -1,0 +1,24 @@
+{
+  "name": "image-editor-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@pixi/filter-adjustment": "^5.1.1",
+    "autoprefixer": "10.4.14",
+    "cropperjs": "^1.5.13",
+    "next": "13.4.9",
+    "postcss": "8.4.25",
+    "react": "18.2.0",
+    "react-cropper": "^2.3.3",
+    "react-dom": "18.2.0",
+    "react-input-slider": "^6.0.1",
+    "react-slider": "^2.0.6",
+    "tailwindcss": "3.3.2"
+  }
+}
