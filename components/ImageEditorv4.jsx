@@ -3,6 +3,7 @@
 import React, { useRef, useState } from 'react';
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
+// import filter from 'css-filter';
 
 function ImageEditor({ imageUrl }) {
   const cropperRef = useRef(null);
@@ -11,7 +12,10 @@ function ImageEditor({ imageUrl }) {
   const [imageHistory, setImageHistory] = useState([imageUrl]);
   const [cropAspectRatio, setCropAspectRatio] = useState(1);
   const [customCropSize, setCustomCropSize] = useState({width: 200, height: 200}); // new crop size
-
+  const [brightness, setBrightness] = useState(100);
+  const [saturation, setSaturation] = useState(100);
+  const [imageStyle, setImageStyle] = useState({});
+  const [showFilters, setShowFilters] = useState(false);
 
   const cropPresets = [
     { label: '4:3', aspectRatio: 4 / 3 },
@@ -29,6 +33,7 @@ function ImageEditor({ imageUrl }) {
     setCropAspectRatio(presetAspectRatio);
   };
 
+
   const handleCropClick = () => {
     if (cropperRef.current) {
       const imageElement = cropperRef.current;
@@ -36,8 +41,10 @@ function ImageEditor({ imageUrl }) {
       if (!cropMode) {
         cropper.setDragMode('crop');
         cropper.setCropBoxData({ left: 0, top: 0, width: 200, height: 200 / cropAspectRatio });
+        document.body.classList.add('cropping');
       } else {
         cropper.setDragMode('move');
+        document.body.classList.remove('cropping');
       }
     }
     setCropMode(!cropMode);
@@ -47,14 +54,48 @@ function ImageEditor({ imageUrl }) {
     if (cropperRef.current) {
       const imageElement = cropperRef.current;
       const cropper = imageElement.cropper;
-      const croppedImageDataUrl = cropper.getCroppedCanvas().toDataURL();
-      setImage(croppedImageDataUrl);
-      setImageHistory(prevHistory => [...prevHistory, croppedImageDataUrl]);
+  
+      const canvas = cropper.getCroppedCanvas();
+      const context = canvas.getContext('2d');
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      const img = new Image();
+      img.src = canvas.toDataURL();
+      img.onload = () => {
+        tempCtx.filter = `brightness(${brightness}%) saturate(${saturation}%)`;
+        tempCtx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const filteredImageDataUrl = tempCanvas.toDataURL();
+        setImage(filteredImageDataUrl);
+        setImageHistory(prevHistory => [...prevHistory, filteredImageDataUrl]);
+      };
+  
       cropper.setDragMode('move');
       cropper.clear();
     }
     setCropMode(false);
   };
+  
+  
+  const handleBrightnessChange = (e) => {
+    setBrightness(e.target.value);
+    const style = {
+      filter: `brightness(${e.target.value}%) saturate(${saturation}%)`
+    };
+    setImageStyle(style);
+  };
+
+  const handleSaturationChange = (e) => {
+    setSaturation(e.target.value);
+    const style = {
+      filter: `brightness(${brightness}%) saturate(${e.target.value}%)`
+    };
+    setImageStyle(style);
+  };
+  
 
   const handleUndoClick = () => {
     if (imageHistory.length > 1) {
@@ -84,10 +125,10 @@ function ImageEditor({ imageUrl }) {
   };
   
 
+ 
   const handleFilterClick = () => {
-    console.log('Filter');
-    // If you implement any filter action, don't forget to update the history as well
-    // setImageHistory(prevHistory => [...prevHistory, newImage]);
+    // Toggle the visibility of filters
+    setShowFilters(!showFilters);
   };
 
   return (
@@ -108,6 +149,7 @@ function ImageEditor({ imageUrl }) {
           >
             Filter
           </button>
+          
           <button
             className={`px-4 py-2 ${!image || imageHistory.length < 2 ? 'bg-gray-300 cursor-not-allowed' : 'bg-red-500 text-white cursor-pointer'} rounded`}
             disabled={!image || imageHistory.length < 2}
@@ -123,8 +165,37 @@ function ImageEditor({ imageUrl }) {
             Save
           </button>
         </div>
+        {showFilters && image && (
+            <div className='mt-2 text-black'>
+              <label>Brightness</label>
+              <input
+                type="range"
+                min="0"
+                max="200"
+                value={brightness}
+                onChange={handleBrightnessChange}
+              />
+  
+              <label>Saturation</label>
+              <input
+                type="range"
+                min="0"
+                max="200"
+                value={saturation}
+                onChange={handleSaturationChange}
+              />
+  
+              <button
+                className={`px-4 py-2 ${!image ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-500 text-white cursor-pointer'} rounded`}
+                disabled={!image}
+                onClick={handleApplyClick}
+              >
+                Apply Filter
+              </button>
+            </div>
+          )}
         {cropMode && (
-          <div className="w-full flex justify-around items-center border border-black rounded p-2 mt-2">
+          <div className="crop-presets w-full flex justify-around items-center border border-black rounded p-2 mt-2">
             {cropPresets.map((preset, index) => (
               <button
                 key={index}
@@ -178,7 +249,7 @@ function ImageEditor({ imageUrl }) {
             <Cropper
               src={image}
               ref={cropperRef}
-              style={{ height: '100%', width: '100%' }}
+              style={{ height: '100%', width: '100%', ...imageStyle }}
               aspectRatio={cropAspectRatio || 1}
               guides={false}
               dragMode="move"
@@ -190,6 +261,8 @@ function ImageEditor({ imageUrl }) {
       </div>
     </div>
   );
+  
+
 }
 
 export default ImageEditor;

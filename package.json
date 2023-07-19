@@ -12,6 +12,7 @@
     "@pixi/filter-adjustment": "^5.1.1",
     "autoprefixer": "10.4.14",
     "cropperjs": "^1.5.13",
+    "css-filter": "^0.1.0",
     "next": "13.4.9",
     "postcss": "8.4.25",
     "react": "18.2.0",
