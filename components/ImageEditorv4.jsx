@@ -14,6 +14,8 @@ function ImageEditor({ imageUrl }) {
   const [customCropSize, setCustomCropSize] = useState({width: 200, height: 200}); // new crop size
   const [brightness, setBrightness] = useState(100);
   const [saturation, setSaturation] = useState(100);
+  const [contrast, setContrast] = useState(100);
+  const [sepia, setSepia] = useState(0);
   const [imageStyle, setImageStyle] = useState({});
   const [showFilters, setShowFilters] = useState(false);
 
@@ -50,33 +52,74 @@ function ImageEditor({ imageUrl }) {
     setCropMode(!cropMode);
   };
 
-  const handleApplyClick = () => {
+  // const handleApplyClick = () => {
+  //   if (cropperRef.current) {
+  //     const imageElement = cropperRef.current;
+  //     const cropper = imageElement.cropper;
+  
+  //     const canvas = cropper.getCroppedCanvas();
+  //     const context = canvas.getContext('2d');
+  //     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  
+  //     const tempCanvas = document.createElement('canvas');
+  //     tempCanvas.width = canvas.width;
+  //     tempCanvas.height = canvas.height;
+  //     const tempCtx = tempCanvas.getContext('2d');
+  //     const img = new Image();
+  //     img.src = canvas.toDataURL();
+  //     img.onload = () => {
+  //       tempCtx.filter = `brightness(${brightness}%) saturate(${saturation}%)`;
+  //       tempCtx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  //       const filteredImageDataUrl = tempCanvas.toDataURL();
+  //       setImage(filteredImageDataUrl);
+  //       setImageHistory(prevHistory => [...prevHistory, filteredImageDataUrl]);
+  //     };
+  
+  //     cropper.setDragMode('move');
+  //     cropper.clear();
+  //   }
+  //   setCropMode(false);
+  // };
+
+  const handleCropApplyClick = () => {
     if (cropperRef.current) {
       const imageElement = cropperRef.current;
       const cropper = imageElement.cropper;
   
       const canvas = cropper.getCroppedCanvas();
-      const context = canvas.getContext('2d');
-      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
   
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = canvas.width;
-      tempCanvas.height = canvas.height;
-      const tempCtx = tempCanvas.getContext('2d');
-      const img = new Image();
-      img.src = canvas.toDataURL();
-      img.onload = () => {
-        tempCtx.filter = `brightness(${brightness}%) saturate(${saturation}%)`;
-        tempCtx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const filteredImageDataUrl = tempCanvas.toDataURL();
-        setImage(filteredImageDataUrl);
-        setImageHistory(prevHistory => [...prevHistory, filteredImageDataUrl]);
-      };
+      if (canvas) {
+        const croppedImageDataUrl = canvas.toDataURL();
+        setImage(croppedImageDataUrl);
+        setImageHistory(prevHistory => [...prevHistory, croppedImageDataUrl]);
   
-      cropper.setDragMode('move');
-      cropper.clear();
+        cropper.clear();
+      }
     }
     setCropMode(false);
+  };
+  
+  const handleApplyFilterClick = () => {
+    if (cropperRef.current) {
+      const imageElement = cropperRef.current;
+      const cropper = imageElement.cropper;
+
+      const canvas = cropper.getCroppedCanvas();
+      const context = canvas.getContext('2d');
+
+      context.filter = `brightness(${brightness}%) saturate(${saturation}%) contrast(${contrast}%) sepia(${sepia}%)`;
+      context.drawImage(canvas, 0, 0, canvas.width, canvas.height);
+
+      const dataUrl = canvas.toDataURL();
+      setImage(dataUrl);
+      setImageHistory(prevHistory => [...prevHistory, dataUrl]);
+    }
+    setShowFilters(false);
+    // Reset the sliders
+    setBrightness(100);
+    setSaturation(100);
+    setContrast(100);
+    setSepia(0);
   };
   
   
@@ -95,6 +138,23 @@ function ImageEditor({ imageUrl }) {
     };
     setImageStyle(style);
   };
+
+  const handleContrastChange = (e) => {
+    setContrast(e.target.value);
+    const style = {
+      filter: `brightness(${brightness}%) saturate(${saturation}%) contrast(${contrast}%) sepia(${sepia}%)`
+    };
+    setImageStyle(style);
+  };
+
+  const handleSepiaChange = (e) => {
+    setSepia(e.target.value);
+    const style = {
+      filter: `brightness(${brightness}%) saturate(${saturation}%) contrast(${contrast}%) sepia(${e.target.value}%)`
+    };
+    setImageStyle(style);
+  };
+
   
 
   const handleUndoClick = () => {
@@ -167,32 +227,68 @@ function ImageEditor({ imageUrl }) {
         </div>
         {showFilters && image && (
             <div className='mt-2 text-black'>
-              <label>Brightness</label>
-              <input
-                type="range"
-                min="0"
-                max="200"
-                value={brightness}
-                onChange={handleBrightnessChange}
-              />
-  
-              <label>Saturation</label>
-              <input
-                type="range"
-                min="0"
-                max="200"
-                value={saturation}
-                onChange={handleSaturationChange}
-              />
-  
+
+            <div style={{display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap'}}>
+              <div style={{flexBasis: '45%'}}>
+                <label>Brightness</label>
+                <input
+                  className="slider"
+                  type="range"
+                  min="0"
+                  max="200"
+                  value={brightness}
+                  onChange={handleBrightnessChange}
+                />
+              </div>
+            
+              <div style={{flexBasis: '45%'}}>
+                <label>Saturation</label>
+                <input
+                  className="slider"
+                  type="range"
+                  min="0"
+                  max="200"
+                  value={saturation}
+                  onChange={handleSaturationChange}
+                />
+              </div>
+          
+              <div style={{flexBasis: '45%', marginTop: '20px'}}>
+                <label>Contrast</label>
+                <input
+                  className="slider"
+                  type="range"
+                  min="0"
+                  max="200"
+                  value={contrast}
+                  onChange={handleContrastChange}
+                />
+              </div>
+          
+              <div style={{flexBasis: '45%', marginTop: '20px'}}>
+                <label>Sepia</label>
+                <input
+                  className="slider"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={sepia}
+                  onChange={handleSepiaChange}
+                />
+              </div>
+            </div>
+          
+            <div style={{display: 'flex', justifyContent: 'center', marginTop: '20px'}}>
               <button
                 className={`px-4 py-2 ${!image ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-500 text-white cursor-pointer'} rounded`}
                 disabled={!image}
-                onClick={handleApplyClick}
+                onClick={handleApplyFilterClick}
               >
                 Apply Filter
               </button>
             </div>
+          </div>
+          
           )}
         {cropMode && (
           <div className="crop-presets w-full flex justify-around items-center border border-black rounded p-2 mt-2">
@@ -236,7 +332,7 @@ function ImageEditor({ imageUrl }) {
             <button
               className={`px-4 py-2 ${!image ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-500 text-white cursor-pointer'} rounded`}
               disabled={!image}
-              onClick={handleApplyClick}
+              onClick={handleCropApplyClick}
             >
               Apply
             </button>
