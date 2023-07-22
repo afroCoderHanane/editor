@@ -33,21 +33,50 @@ const UploadForm = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <form onSubmit={handleSubmit} className="w-64">
-        <input type="file" ref={fileInputRef} required />
-        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" required />
-        <input type="text" value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Caption" required />
-        <select value={folder} onChange={(e) => setFolder(e.target.value)} required>
-          <option value="">--Please choose a folder--</option>
-          {folders.map((folder, index) => (
-            <option key={index} value={folder}>
-              {folder}
-            </option>
-          ))}
-        </select>
-        <button type="submit" disabled={uploading}>Submit</button>
-      </form>
+    <div className="flex items-center justify-center h-screen bg-gray-100">
+      <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 flex flex-col">
+        <div className="mb-4">
+          <h2 className="text-center font-bold text-xl text-black">Upload File</h2>
+        </div>
+        <form onSubmit={handleSubmit} className="w-96">
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="file">
+              Choose File
+            </label>
+            <input type="file" id="file" ref={fileInputRef} required />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="title">
+              Title
+            </label>
+            <input type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="caption">
+              Caption
+            </label>
+            <textarea id="caption" value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Caption" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="folder">
+              Select Folder
+            </label>
+            <select id="folder" value={folder} onChange={(e) => setFolder(e.target.value)} className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+              <option value="">--Please choose a folder--</option>
+              {folders.map((folder, index) => (
+                <option key={index} value={folder}>
+                  {folder}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center justify-between">
+            <button type="submit" disabled={uploading} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+              Submit
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
