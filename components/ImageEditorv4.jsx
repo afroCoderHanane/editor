@@ -340,7 +340,7 @@ function ImageEditor({ imageUrl }) {
         )}
       </div>
       <div className="flex justify-around w-full flex-grow p-4">
-        <div className="w-1/2 relative overflow-hidden flex items-center justify-center bg-white border-4 border-black rounded">
+        <div className=" relative overflow-hidden flex items-center justify-center bg-white border-4 border-black rounded">
           {image && (
             <Cropper
               src={image}
